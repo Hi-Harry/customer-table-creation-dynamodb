@@ -1,0 +1,107 @@
+service: dynamodb-customer-api
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  stage: dev
+  region: ap-south-1
+  environment:
+    DYNAMODB_TABLE_NAME: ${self:custom.customersTableName}
+
+custom:
+  customersTableName: customers-table-${self:provider.stage}
+
+plugins:
+  - serverless-iam-roles-per-function
+
+functions:
+  getCustomer:
+    handler: api.getCustomer
+    name: get_customer
+    memorySize: 128
+    timeout: 5
+    events:
+      - http:
+          path: customer/{uid}
+          method: GET
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "dynamodb:GetItem"
+        Resource: !GetAtt CustomersTable.Arn
+
+  createCustomer:
+    handler: api.createCustomer
+    name: create_customer
+    memorySize: 128
+    timeout: 5
+    events:
+      - http:
+          path: customer
+          method: POST
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "dynamodb:PutItem"
+        Resource: !GetAtt CustomersTable.Arn
+
+  updateCustomer:
+    handler: api.updateCustomer
+    name: update_customer
+    memorySize: 128
+    timeout: 5
+    events:
+      - http:
+          path: customer/{uid}
+          method: PUT
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "dynamodb:UpdateItem"
+        Resource: !GetAtt CustomersTable.Arn
+
+  deleteCustomer:
+    handler: api.deleteCustomer
+    name: delete_customer
+    memorySize: 128
+    timeout: 5
+    events:
+      - http:
+          path: customer/{uid}
+          method: DELETE
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "dynamodb:DeleteItem"
+        Resource: !GetAtt CustomersTable.Arn
+
+  getAllCustomers:
+    handler: api.getAllCustomers
+    name: get_all_customers
+    memorySize: 128
+    timeout: 5
+    events:
+      - http:
+          path: customers
+          method: GET
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "dynamodb:Scan"
+        Resource: !GetAtt CustomersTable.Arn
+
+resources:
+  Resources:
+    CustomersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.customersTableName}
+        AttributeDefinitions:
+          - AttributeName: uid
+            AttributeType: S
+        KeySchema:
+          - AttributeName: uid
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
