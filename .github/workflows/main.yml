@@ -1,31 +1,33 @@
-name: Deploy DynamoDB CRUD API
+name: Node.js CI
 
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  deploy:
-    name: deploy
+  build:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-    - uses: actions/cache@v3
-      with:
-        path: node_modules
-        key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-
-    - name: Use Node.js v20.x
+    - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
-        node-version: v20.x
+        node-version: ${{ matrix.node-version }}
 
     - name: Install dependencies
-      run: yarn install
+      run: npm install
 
-    - name: Install Serverless Framework v3
-      run: npm install -g serverless@3
+    - name: Run linter
+      run: echo "Add lint script in package.json to use this step"
 
-    - name: Load Environment Variables
-      run: npx dotenv serverless deploy
+    - name: Run tests
+      run: echo "Add test script in package.json to use this step"
