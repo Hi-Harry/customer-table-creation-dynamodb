@@ -1,5 +1,5 @@
 import express from 'express';
-import { createCustomer, modifyCustomer, readAllCustomers, readCustomer, removeCustomer  } from '../controllers/MainController.js';
+import { createCustomer, modifyCustomer, readAllCustomers, readCustomer, readCustomerByGSI, readCustomerByType, removeCustomer  } from '../controllers/MainController.js';
 
 
 const router = express.Router();
@@ -19,5 +19,11 @@ router.put("/:uid", modifyCustomer);
 
 // DELETE /customers/:uid
 router.delete("/:uid", removeCustomer);
+
+//GET /customers/gsi/:customerCode
+router.get("/gsi/:customerCode", readCustomerByGSI);
+
+//GET /customers/type/:customer_type
+router.get("/type/:customer_type", readCustomerByType);
 
 export default router;

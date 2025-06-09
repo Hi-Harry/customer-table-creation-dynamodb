@@ -7,7 +7,8 @@ import {
   GetCommand,
   ScanCommand,
   UpdateCommand,
-  DeleteCommand
+  DeleteCommand,
+  QueryCommand
 } from "@aws-sdk/lib-dynamodb";
 import dotenv from "dotenv";
 
@@ -120,3 +121,49 @@ export const deleteCustomer = async (uid) => {
     throw error;
   }
 };
+
+export const getCustomerCode = async (customerCode) => {
+  try {
+    console.log("Querying GSI for customerCode:", customerCode);
+
+    const command = new QueryCommand({
+      TableName: TABLE_NAME,
+      IndexName: "customerCode-index", // Ensure GSI name matches
+      KeyConditionExpression: "customerCode = :code",
+      ExpressionAttributeValues: {
+        ":code": customerCode,
+      },
+    });
+
+    const response = await ddbDocClient.send(command);
+    console.log("DynamoDB response:", response);
+
+    if (!response.Items || response.Items.length === 0) {
+      console.warn(`No items found for customerCode: ${customerCode}`);
+      return null; // Return null if no items found
+    }
+
+    return response.Items; // Return matching items
+  } catch (error) {
+    console.error("Error querying GSI for customerCode:", error);
+    throw error;
+  }
+};
+
+export const getCustomerByType = async (customer_type) => {
+  try {
+    const command = new QueryCommand({
+      TableName: TABLE_NAME,
+      IndexName: "customer_type-index",
+      KeyConditionExpression: "customer_type = :type",
+      ExpressionAttributeValues: {
+        ":type": customer_type,
+      },
+    });
+    const response = await ddbDocClient.send(command);
+    return response.Items;
+  } catch(error) {
+    console.error("Error querying GSI for customer_type:", error);
+    throw error;
+  }
+}

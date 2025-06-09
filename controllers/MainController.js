@@ -3,7 +3,9 @@ import {
   getCustomer,
   getAllCustomers,
   updateCustomer,
-  deleteCustomer
+  deleteCustomer,
+  getCustomerCode,
+  getCustomerByType
 } from "../models/MainModel.js";
 
 // CREATE
@@ -66,3 +68,46 @@ export const removeCustomer = async (req, res) => {
     res.status(500).json({ error: "Could not delete customer" });
   }
 };
+
+export const readCustomerByGSI = async (req, res) => {
+  try {
+    const { customerCode } = req.params;
+
+    if (!customerCode) {
+      return res.status(400).json({ error: "customerCode is required" });
+    }
+
+    const customers = await getCustomerCode(customerCode);
+
+    if (!customers) {
+      return res.status(404).json({ error: `No customers found for customerCode: ${customerCode}` });
+    }
+
+    res.json(customers);
+  } catch (error) {
+    console.error("Error reading customer by GSI:", error);
+    res.status(500).json({ error: "Could not fetch customer by GSI" });
+  }
+};
+
+export const readCustomerByType = async (req, res) => {
+  try {
+    const { customer_type } = req.params;
+
+    if (!customer_type) {
+      return res.status(400).json({ error: "customerType is required" });
+    }
+
+    const customers = await getCustomerByType(customer_type);
+
+    if (!customers) {
+      return res.status(404).json({ error: `No customers found with this customerType: ${customer_type}` });
+    }
+
+    res.json(customers);
+  } catch (error) {
+    console.error("Error reading customer by Type:", error);
+    res.status(500).json({ error: "Could not fetch customer by Type" });
+  }
+};
+
